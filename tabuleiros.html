@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tabuleiros para imprimir</title>
+<meta name="description" content="Tabuleiros à escala dos oito jogos do Campeonato Nacional de Jogos Matemáticos, prontos a imprimir.">
+<style>
+:root{--bg:#fbfaf6;--fg:#1d2420;--dim:#5b665f;--line:#dcd8cc;--acc:#1f4d3a;--card:#ffffff}
+@media (prefers-color-scheme:dark){:root{--bg:#141815;--fg:#ece9df;--dim:#a2aca5;--line:#2c352f;--acc:#7fc4a0;--card:#1a201c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Georgia,"Times New Roman",serif}
+.topo{max-width:900px;margin:0 auto;padding:24px 20px 8px}
+h1{font-size:2rem;line-height:1.2;margin:8px 0 8px}
+.lead{color:var(--dim);margin:0 0 16px}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 8px;font:14px system-ui,sans-serif}
+.ctrl button,.ctrl select{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:7px 16px;cursor:pointer}
+.ctrl button.prim{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.lang button{border:0;border-radius:0;background:none;padding:7px 14px}
+.lang button[aria-pressed="true"]{background:var(--acc);color:var(--bg)}
+.dica{font:13px/1.5 system-ui,sans-serif;color:var(--dim);margin:6px 0 0}
+main{max-width:900px;margin:0 auto;padding:0 20px 40px}
+.pagina{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:0 0 20px;text-align:center}
+.pagina h2{margin:0 0 4px;font-size:1.4rem}
+.pagina .sub{font:13px/1.5 system-ui,sans-serif;color:var(--dim);margin:0 0 14px}
+.pagina svg{max-width:100%;height:auto;background:#fff}
+body[data-lang="pt"] [data-l="en"]{display:none}
+body[data-lang="en"] [data-l="pt"]{display:none}
+.oculto{display:none}
+@page{size:A4;margin:10mm}
+@page paisagem{size:A4 landscape;margin:10mm}
+@media print{
+body{background:#fff;color:#000;font-size:11pt}
+.topo,.ctrl,.dica{display:none}
+main{max-width:none;padding:0}
+.pagina{border:0;border-radius:0;padding:0;margin:0;background:#fff;break-after:page;page-break-after:always}
+.pagina:last-child{break-after:auto;page-break-after:auto}
+.pagina.paisagem{page:paisagem}
+.pagina .sub{color:#000}
+.pagina svg{max-width:100%;height:auto}
+}
+</style>
+</head>
+<body data-lang="pt">
+<div class="topo">
+<h1><span data-l="pt">Tabuleiros para imprimir</span><span data-l="en">Boards to print</span></h1>
+<p class="lead"><span data-l="pt">Os tabuleiros à escala dos oito jogos do CNJM, uma página por jogo.</span><span data-l="en">To-scale boards for the eight CNJM games, one page per game.</span></p>
+<div class="ctrl">
+<select id="escolha" aria-label="Jogo"></select>
+<button type="button" class="prim" id="imprimir"><span data-l="pt">Imprimir</span><span data-l="en">Print</span></button>
+<div class="lang" role="group" aria-label="Language">
+<button type="button" data-set="pt" aria-pressed="true">PT</button>
+<button type="button" data-set="en" aria-pressed="false">EN</button>
+</div>
+</div>
+<p class="dica"><span data-l="pt">No diálogo de impressão escolhe o tamanho A4, escala 100% e desliga os cabeçalhos. Para imprimir só um jogo, escolhe-o na lista antes.</span><span data-l="en">In the print dialog choose A4, 100% scale and turn headers off. To print a single game, pick it in the list first.</span></p>
+</div>
+<main id="paginas"></main>
+<script>
+(function(){
+var NS='http://www.w3.org/2000/svg',LETRAS='abcdefghijk';
+function s(tag,attrs,pai){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(pai)pai.appendChild(e);return e}
+function svg(w,h){return s('svg',{viewBox:'0 0 '+w+' '+h,width:w+'mm',height:h+'mm'})}
+function txt(pai,x,y,t,tam,peso,cor){var e=s('text',{x:x,y:y,'text-anchor':'middle','font-size':tam||4,'font-family':'Arial, sans-serif','font-weight':peso||'normal',fill:cor||'#222'},pai);e.textContent=t;return e}
+
+function grelha(cols,rows,cell,opts){
+opts=opts||{};
+var m=10,e=svg(cols*cell+2*m,rows*cell+2*m),i,j;
+for(i=0;i<rows;i++)for(j=0;j<cols;j++){
+var hl=opts.hl&&opts.hl(j,rows-i);
+s('rect',{x:m+j*cell,y:m+i*cell,width:cell,height:cell,fill:hl?'#d8d8d8':'none',stroke:'#000','stroke-width':0.5},e);
+}
+for(j=0;j<cols;j++)txt(e,m+j*cell+cell/2,m+rows*cell+6,LETRAS[j]);
+for(i=0;i<rows;i++)txt(e,m-4,m+i*cell+cell/2+1.4,rows-i);
+(opts.marcas||[]).forEach(function(k){
+var x=m+k.c*cell+cell/2,y=m+(rows-k.r)*cell+cell/2;
+if(k.circulo)s('circle',{cx:x,cy:y,r:cell*0.3,fill:'none',stroke:'#000','stroke-width':0.8},e);
+if(k.texto)txt(e,x,y+cell*0.18,k.texto,cell*0.5,'bold','#000');
+});
+return e;
+}
+
+function tabuleiroGo(){
+var n=9,sp=20,m=12,e=svg((n-1)*sp+2*m,(n-1)*sp+2*m),i;
+for(i=0;i<n;i++){
+s('line',{x1:m,y1:m+i*sp,x2:m+(n-1)*sp,y2:m+i*sp,stroke:'#000','stroke-width':i===0||i===n-1?0.9:0.45},e);
+s('line',{x1:m+i*sp,y1:m,x2:m+i*sp,y2:m+(n-1)*sp,stroke:'#000','stroke-width':i===0||i===n-1?0.9:0.45},e);
+txt(e,m+i*sp,m+(n-1)*sp+8,LETRAS[i]);
+txt(e,m-7,m+(n-1-i)*sp+1.4,i+1);
+}
+[[2,3],[6,3],[2,7],[6,7],[4,5]].forEach(function(p){
+s('circle',{cx:m+p[0]*sp,cy:m+(n-p[1])*sp,r:1.5,fill:'#000'},e);
+});
+return e;
+}
+
+function hexPonta(cx,cy,r,ang0){
+var pts=[],k,a;
+for(k=0;k<6;k++){a=(ang0+60*k)*Math.PI/180;pts.push((cx+r*Math.cos(a)).toFixed(2)+','+(cy+r*Math.sin(a)).toFixed(2))}
+return pts.join(' ');
+}
+
+function tabuleiroProduto(){
+var r=11,hh=Math.sqrt(3)*r,m=8,lens=[5,6,7,8,9,8,7,6,5],e=svg(8*1.5*r+2*r+2*m,9*hh+2*m);
+lens.forEach(function(len,c){
+var cx=m+r+c*1.5*r,off=(9-len)/2*hh,k;
+for(k=0;k<len;k++){
+s('polygon',{points:hexPonta(cx,m+off+(k+0.5)*hh,r,0),fill:'none',stroke:'#000','stroke-width':0.5,'stroke-linejoin':'round'},e);
+}
+});
+return e;
+}
+
+function tabuleiroNex(){
+var r=8,w=Math.sqrt(3)*r,m=10,n=11,e=svg(m*2+w*(n+(n-1)/2),m*2+2*r+(n-1)*1.5*r),i,j;
+function C(i,j){return [m+w/2+(j+i/2)*w,m+r+i*1.5*r]}
+for(i=0;i<n;i++)for(j=0;j<n;j++){
+var c=C(i,j);
+s('polygon',{points:hexPonta(c[0],c[1],r,30),fill:'none',stroke:'#000','stroke-width':0.45,'stroke-linejoin':'round'},e);
+}
+var topo=[],base=[],esq=[],dir=[],c0;
+for(j=0;j<n;j++){
+c0=C(0,j);topo.push((c0[0]-w/2)+','+(c0[1]-r/2),c0[0]+','+(c0[1]-r),(c0[0]+w/2)+','+(c0[1]-r/2));
+c0=C(n-1,j);base.push((c0[0]-w/2)+','+(c0[1]+r/2),c0[0]+','+(c0[1]+r),(c0[0]+w/2)+','+(c0[1]+r/2));
+}
+for(i=0;i<n;i++){
+c0=C(i,0);esq.push((c0[0]-w/2)+','+(c0[1]-r/2),(c0[0]-w/2)+','+(c0[1]+r/2));
+c0=C(i,n-1);dir.push((c0[0]+w/2)+','+(c0[1]-r/2),(c0[0]+w/2)+','+(c0[1]+r/2));
+}
+[topo,base].forEach(function(p){s('polyline',{points:p.join(' '),fill:'none',stroke:'#2b6cb0','stroke-width':1.8,'stroke-linejoin':'round'},e)});
+[esq,dir].forEach(function(p){s('polyline',{points:p.join(' '),fill:'none',stroke:'#d6336c','stroke-width':1.8,'stroke-dasharray':'4 2.2','stroke-linejoin':'round'},e)});
+for(j=0;j<n;j++){c0=C(0,j);txt(e,c0[0],6,LETRAS[j])}
+for(i=0;i<n;i++){c0=C(i,0);txt(e,c0[0]-w/2-4,c0[1]+1.4,i+1)}
+return e;
+}
+
+var JOGOS=[
+{id:'quelhas',nome:'Quelhas',pt:'10×10, casas de 18 mm.',en:'10×10, 18 mm cells.',tab:function(){return grelha(10,10,18)}},
+{id:'produto',nome:'Produto',pt:'Hexagonal, cinco casas de lado (61 casas).',en:'Hexagonal, five cells per side (61 cells).',tab:tabuleiroProduto},
+{id:'dominorio',nome:'Dominório',pt:'8×8, casas de 22 mm.',en:'8×8, 22 mm cells.',tab:function(){return grelha(8,8,22)}},
+{id:'atarigo',nome:'Atari Go',pt:'9×9 linhas, 20 mm entre linhas. As pedras jogam-se nas interseções.',en:'9×9 lines, 20 mm apart. Stones are placed on the intersections.',tab:tabuleiroGo},
+{id:'nex',nome:'NEX',pt:'11×11 casas hexagonais. As linhas azuis contínuas (em cima e em baixo) são as margens do primeiro jogador e as linhas rosa tracejadas (à esquerda e à direita) as do segundo.',en:'11×11 hexagonal cells. The solid blue lines (top and bottom) are the first player\'s sides and the dashed pink lines (left and right) are the second player\'s.',paisagem:true,tab:tabuleiroNex},
+{id:'gatosecaes',nome:'Gatos e Cães',pt:'8×8, casas de 22 mm. As quatro casas cinzentas são a zona central.',en:'8×8, 22 mm cells. The four grey cells are the central zone.',tab:function(){return grelha(8,8,22,{hl:function(c,r){return (c===3||c===4)&&(r===4||r===5)}})}},
+{id:'rastros',nome:'Rastros',pt:'7×7, casas de 22 mm. A casa 1 é do Jogador 1 e a casa 2 do Jogador 2. A peça branca começa no círculo (e5).',en:'7×7, 22 mm cells. Cell 1 belongs to Player 1 and cell 2 to Player 2. The white piece starts on the circle (e5).',tab:function(){return grelha(7,7,22,{marcas:[{c:0,r:1,texto:'1'},{c:6,r:7,texto:'2'},{c:4,r:5,circulo:true}],hl:function(c,r){return (c===0&&r===1)||(c===6&&r===7)}})}},
+{id:'semaforo',nome:'Semáforo',pt:'3×4, casas de 40 mm.',en:'3×4, 40 mm cells.',tab:function(){return grelha(4,3,40)}}
+];
+
+var cont=document.getElementById('paginas'),sel=document.getElementById('escolha');
+function opcao(v,pt,en){var o=document.createElement('option');o.value=v;o.setAttribute('data-pt',pt);o.setAttribute('data-en',en);o.textContent=pt;sel.appendChild(o)}
+opcao('todos','Todos os jogos','All games');
+JOGOS.forEach(function(j){
+opcao(j.id,j.nome,j.nome);
+var p=document.createElement('section');p.className='pagina'+(j.paisagem?' paisagem':'');p.setAttribute('data-jogo',j.id);
+var h=document.createElement('h2');h.textContent=j.nome;
+var sub=document.createElement('p');sub.className='sub';
+var a=document.createElement('span');a.setAttribute('data-l','pt');a.textContent=j.pt;
+var b=document.createElement('span');b.setAttribute('data-l','en');b.textContent=j.en;
+sub.appendChild(a);sub.appendChild(b);
+p.appendChild(h);p.appendChild(sub);p.appendChild(j.tab());
+cont.appendChild(p);
+});
+
+function filtrar(){
+var v=sel.value;
+Array.prototype.forEach.call(cont.children,function(p){p.classList.toggle('oculto',v!=='todos'&&p.getAttribute('data-jogo')!==v)});
+}
+sel.addEventListener('change',filtrar);
+document.getElementById('imprimir').addEventListener('click',function(){window.print()});
+
+var botoes=document.querySelectorAll('.lang button');
+function definir(l){
+document.body.setAttribute('data-lang',l);
+document.documentElement.lang=l;
+botoes.forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-set')===l?'true':'false')});
+Array.prototype.forEach.call(sel.options,function(o){o.textContent=o.getAttribute('data-'+l)});
+try{localStorage.setItem('regras_lang',l)}catch(e){}
+}
+botoes.forEach(function(b){b.addEventListener('click',function(){definir(b.getAttribute('data-set'))})});
+var guardada=null;
+try{guardada=localStorage.getItem('regras_lang')}catch(e){}
+definir(guardada||((navigator.language||'pt').toLowerCase().indexOf('pt')===0?'pt':'en'));
+})();
+</script>
+</body>
+</html>
